@@ -17,7 +17,7 @@ class FormResumen extends LitElement {
   static styles = css`
     :host {
       display: block;
-      max-width: 800px;
+      max-width: 1000px;
       margin: auto;
       font-family: system-ui, sans-serif;
     }
@@ -30,20 +30,44 @@ class FormResumen extends LitElement {
       margin-bottom: 2rem;
     }
 
-    .item {
-      margin-bottom: 0.5rem;
+    .card {
+      background: white;
+      border-radius: 12px;
+      padding: 1.5rem;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
     }
 
-    .bloque {
-      border: 1px solid #ddd;
-      padding: 1rem;
-      border-radius: 10px;
-      background-color: #f9f9f9;
-      margin-bottom: 1rem;
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
     }
 
     .label {
+      font-weight: 600;
+      color: #374151;
+    }
+
+    .value {
+      margin-bottom: 0.8rem;
+      color: #111827;
+    }
+
+    .row {
+      display: flex;
+      justify-content: space-between;
+      border-bottom: 1px solid #e5e7eb;
+      padding: 0.5rem 0;
+    }
+
+    .title {
+      font-size: 1.1rem;
       font-weight: bold;
+      margin-bottom: 1rem;
+    }
+
+    .bloque {
+      margin-bottom: 1rem;
     }
   `;
 
@@ -51,34 +75,47 @@ class FormResumen extends LitElement {
     return html`
       <h2>Resumen Final</h2>
 
-      <section>
-        <h3>Datos Básicos</h3>
-        <div class="item"><span class="label">Nombre:</span> ${this.datos.nombre}</div>
-        <div class="item"><span class="label">Apellido:</span> ${this.datos.apellido}</div>
-        <div class="item"><span class="label">Tipo Documento:</span> ${this.datos.tipoDocumento}</div>
-        <div class="item"><span class="label">Número:</span> ${this.datos.numeroDocumento}</div>
-        <div class="item"><span class="label">Sexo:</span> ${this.datos.sexo}</div>
-        <div class="item"><span class="label">Fecha Nacimiento:</span> ${this.datos.fechaNacimiento}</div>
+      <section class="card">
+        <div class="title">Información Básica</div>
+        <div class="grid">
+          <div>
+            <div class="label">Nombre Completo</div>
+            <div class="value">${this.datos.nombre} ${this.datos.apellido}</div>
+          </div>
+          <div>
+            <div class="label">Documento</div>
+            <div class="value">${this.datos.tipoDocumento} - ${this.datos.numeroDocumento}</div>
+          </div>
+          <div>
+            <div class="label">Sexo</div>
+            <div class="value">${this.datos.sexo}</div>
+          </div>
+          <div>
+            <div class="label">Fecha de Nacimiento</div>
+            <div class="value">${this.datos.fechaNacimiento}</div>
+          </div>
+        </div>
       </section>
 
-      <section>
-        <h3>Lenguajes de Programación</h3>
+      <section class="card">
+        <div class="title">Lenguajes de Programación</div>
         ${this.lenguajes.map(lang => html`
-          <div class="bloque">
-            <div><span class="label">Lenguaje:</span> ${lang.nombre}</div>
-            <div><span class="label">Años:</span> ${lang.anios}</div>
+          <div class="row">
+            <span>${lang.nombre}</span>
+            <span>${lang.anios} años</span>
           </div>
         `)}
       </section>
 
-      <section>
-        <h3>Experiencia Laboral</h3>
+      <section  class="card">
+        <div class="title">Experiencia Laboral</div>
         ${this.experiencia.map(exp => html`
           <div class="bloque">
-            <div><span class="label">Empresa:</span> ${exp.empresa}</div>
-            <div><span class="label">Años:</span> ${exp.anios}</div>
-            <div><span class="label">Inicio:</span> ${exp.inicio}</div>
-            <div><span class="label">Fin:</span> ${exp.fin}</div>
+            <div class="row">
+              <span>${exp.empresa}</span>
+              <span>${exp.inicio} - ${exp.fin}</span>
+            </div>
+            <div class="value" style="text-align:right">${exp.anios} años de experiencia</div>
           </div>
         `)}
       </section>

@@ -10,58 +10,56 @@ class FormExperiencia extends LitElement {
     this.experiencia = [
       { empresa: '', anios: '', inicio: '', fin: '' }
     ];
+    this.errores = [];
   }
 
   static styles = css`
     :host {
       display: block;
-      max-width: 800px;
-      margin: auto;
-      font-family: system-ui, sans-serif;
     }
 
     h2 {
-      margin-bottom: 1rem;
+      margin-bottom: 1.5rem;
     }
 
     .bloque {
+      background-color: #ffffff;
       border: 1px solid #ddd;
-      padding: 1rem;
       border-radius: 10px;
+      padding: 1rem;
       margin-bottom: 1.5rem;
-      background-color: #fff;
-      box-shadow: 0 1px 4px rgba(0,0,0,0.1);
-      position: relative;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
       display: grid;
       grid-template-columns: 1fr 1fr;
       gap: 1rem;
     }
 
     input {
+      width: 100%;
       padding: 0.6rem;
       font-size: 1rem;
       border: 1px solid #ccc;
       border-radius: 6px;
-      width: 90%;
+      box-sizing: border-box;
     }
 
     .eliminar-btn {
       grid-column: span 2;
-      justify-self: start;
-      background: none;
+      background-color: #ef4444;
+      color: white;
       border: none;
-      color: red;
-      font-weight: bold;
-      cursor: pointer;
+      padding: 0.5rem 1rem;
       font-size: 0.9rem;
+      border-radius: 6px;
+      cursor: pointer;
       display: flex;
       align-items: center;
-      gap: 0.3rem;
-      margin-top: 0.5rem;
+      gap: 0.4rem;
+      width: fit-content;
     }
 
     .eliminar-btn:hover {
-      text-decoration: underline;
+      background-color: #dc2626;
     }
 
     .agregar-btn {
@@ -69,6 +67,7 @@ class FormExperiencia extends LitElement {
       color: white;
       border: none;
       border-radius: 6px;
+      margin-top: 1rem;
       padding: 0.6rem 1.2rem;
       cursor: pointer;
       font-size: 1rem;
@@ -79,6 +78,12 @@ class FormExperiencia extends LitElement {
 
     .agregar-btn:hover {
       background-color: #1d4ed8;
+    }
+
+    .error {
+      color: red;
+      font-size: 0.8rem;
+      grid-column: span 2;
     }
   `;
 
@@ -140,10 +145,34 @@ class FormExperiencia extends LitElement {
           </button>
         </div>
       `)}
+      ${this.errores.length > 0 ? html`
+        <div class="error">${this.errores[0]}</div>
+      ` : ''}
 
       <button class="agregar-btn" @click=${this.agregarExperiencia}>➕ Agregar Experiencia</button>
     `;
   }
+
+  isValid() {
+    let errores = [];
+  
+    const algunaValida = this.experiencia.some(exp => {
+      const fechasValidas = exp.inicio && exp.fin && exp.inicio <= exp.fin;
+      const empresaOk = exp.empresa?.trim();
+      const aniosOk = !isNaN(exp.anios) && Number(exp.anios) > 0;
+      return empresaOk && aniosOk && fechasValidas;
+    });
+  
+    if (!algunaValida) {
+      errores.push('Debe completar al menos una experiencia válida.');
+    }
+  
+    this.errores = errores;
+    this.requestUpdate();
+  
+    return errores.length === 0;
+  }
+
 }
 
 customElements.define('form-experiencia', FormExperiencia);

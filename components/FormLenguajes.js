@@ -10,32 +10,70 @@ class FormLenguajes extends LitElement {
     this.lenguajes = [
       { nombre: '', anios: '' }
     ];
+    this.errores = [];
   }
 
   static styles = css`
+    :host {
+      display: block;
+      width: 100%;
+    }
+
+    h2 {
+      margin-bottom: 1.5rem;
+    }
+
     .campo {
-      display: flex;
-      align-items: center;
+      display: grid;
+      grid-template-columns: 2fr 1fr auto;
       gap: 1rem;
-      margin-bottom: 0.5rem;
+      align-items: center;
+      margin-bottom: 1rem;
     }
 
     input {
-      padding: 0.3rem;
+      width: 100%;
+      padding: 0.6rem;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+      font-size: 1rem;
+      box-sizing: border-box;
     }
 
     button.eliminar {
-      background-color: red;
+      background-color: #ef4444;
       color: white;
       border: none;
-      padding: 0.2rem 0.5rem;
+      padding: 0.5rem;
+      font-size: 1rem;
+      border-radius: 6px;
       cursor: pointer;
     }
 
-    button.agregar {
+    button.eliminar:hover {
+      background-color: #dc2626;
+    }
+
+    .agregar {
       margin-top: 1rem;
-      padding: 0.5rem 1rem;
+      background-color: #2563eb;
+      color: white;
+      border: none;
+      padding: 0.6rem 1.2rem;
+      font-size: 1rem;
+      border-radius: 6px;
       cursor: pointer;
+      transition: background 0.2s ease;
+    }
+
+    .agregar:hover {
+      background-color: #1d4ed8;
+    }
+
+    .error {
+      color: red;
+      font-size: 0.8rem;
+      grid-column: span 3;
     }
   `;
 
@@ -86,8 +124,30 @@ class FormLenguajes extends LitElement {
         </div>
       `)}
 
+      ${this.errores.length > 0 ? html`
+        <div class="error">${this.errores[0]}</div>
+      ` : ''}
+
       <button class="agregar" @click=${this.agregarLenguaje}>Agregar lenguaje</button>
     `;
+  }
+
+  isValid() {
+    let errores = [];
+  
+    // Debe haber al menos un lenguaje con nombre y años válidos
+    const valido = this.lenguajes.some(lang => 
+      lang.nombre?.trim() && !isNaN(lang.anios) && Number(lang.anios) > 0
+    );
+  
+    if (!valido) {
+      errores.push('Debe ingresar al menos un lenguaje válido con nombre y años.');
+    }
+  
+    this.errores = errores;
+    this.requestUpdate();
+  
+    return errores.length === 0;
   }
 }
 

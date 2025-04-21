@@ -18,22 +18,74 @@ export class AppRoot extends LitElement {
     }
 
     static styles = css`
-    .nav {
-      margin-top: 1rem;
-      display: flex;
-      gap: 1rem;
-    }
 
-    button {
-      padding: 0.5rem 1rem;
-      font-size: 1rem;
-    }
-  `;
+        .form-card {
+            background-color: white;
+            border-radius: 12px;
+            padding: 2rem;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.05);
+            width: 800px;
+            margin: auto;
+        }
+
+        .nav {
+            margin-top: 2rem;
+            display: flex;
+            justify-content: space-between;
+            gap: 1rem;
+        }
+
+        button {
+            font-size: 1rem;
+            border-radius: 6px;
+            padding: 0.6rem 1.2rem;
+            border: none;
+            cursor: pointer;
+            transition: background 0.2s ease;
+        }
+
+        .btn-primary {
+            background-color: #2563eb;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background-color: #1d4ed8;
+        }
+
+        .btn-secondary {
+            background-color: #e5e7eb;
+            color: black;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 0.6rem;
+            border-radius: 6px;
+            border: 1px solid #ccc;
+            font-size: 1rem;
+            box-sizing: border-box;
+        }
+
+    
+    `;
 
     siguiente() {
-        if (this.paso === 'datos') this.paso = 'lenguajes';
-        else if (this.paso === 'lenguajes') this.paso = 'experiencia';
-        else if (this.paso === 'experiencia') this.paso = 'resumen';
+        if (this.paso === 'datos'){
+            const form = this.renderRoot.querySelector('form-datos');
+            if (!form.isValid()) return;
+            this.paso = 'lenguajes';
+        }
+        else if (this.paso === 'lenguajes') {
+            const form = this.renderRoot.querySelector('form-lenguajes');
+            if (!form.isValid()) return;
+            this.paso = 'experiencia';
+          }
+        else if (this.paso === 'experiencia') {
+        const form = this.renderRoot.querySelector('form-experiencia');
+        if (!form.isValid()) return;
+        this.paso = 'resumen';
+        }
     }
 
     anterior() {
@@ -59,35 +111,38 @@ export class AppRoot extends LitElement {
 
     render() {
         return html`
-      <main>
-        ${this.paso === 'datos' ? html`
-            <form-datos
-                .datos=${this.datosBasicos}
-                @actualizar-datos=${this.actualizarDatos}
-            ></form-datos>` : ''}
-        ${this.paso === 'lenguajes' ? html`
-            <form-lenguajes
-                .lenguajes=${this.lenguajes}
-                @actualizar-lenguajes=${this.actualizarLenguajes}
-            ></form-lenguajes>` : ''}
-        ${this.paso === 'experiencia' ? html`
-            <form-experiencia
-                .experiencia=${this.experiencia}
-                @actualizar-experiencia=${this.actualizarExperiencia}
-            ></form-experiencia>` : ''}
-        ${this.paso === 'resumen' ? html`
-            <form-resumen
-                .datos=${this.datosBasicos}
-                .lenguajes=${this.lenguajes}
-                .experiencia=${this.experiencia}
-            ></form-resumen>` : ''}
-        
-        <div class="nav">
-          ${this.paso !== 'datos' ? html`<button @click=${this.anterior}>Anterior</button>` : ''}
-          ${this.paso !== 'resumen' ? html`<button @click=${this.siguiente}>Siguiente</button>` : ''}
-        </div>
-      </main>
-    `;
+            <main>
+                <div class="form-card">
+                    ${this.paso === 'datos' ? html`
+                        <form-datos
+                            .datos=${this.datosBasicos}
+                            @actualizar-datos=${this.actualizarDatos}
+                        ></form-datos>` : ''}
+                    ${this.paso === 'lenguajes' ? html`
+                        <form-lenguajes
+                            .lenguajes=${this.lenguajes}
+                            @actualizar-lenguajes=${this.actualizarLenguajes}
+                        ></form-lenguajes>` : ''}
+                    ${this.paso === 'experiencia' ? html`
+                        <form-experiencia
+                            .experiencia=${this.experiencia}
+                            @actualizar-experiencia=${this.actualizarExperiencia}
+                        ></form-experiencia>` : ''}
+                    ${this.paso === 'resumen' ? html`
+                        <form-resumen
+                            .datos=${this.datosBasicos}
+                            .lenguajes=${this.lenguajes}
+                            .experiencia=${this.experiencia}
+                        ></form-resumen>` : ''}
+                
+                    <!-- Botones de navegación dentro del form-card -->
+                    <div class="nav">
+                        ${this.paso !== 'datos' ? html`<button class="btn-secondary" @click=${this.anterior}>Anterior</button>` : ''}
+                        ${this.paso !== 'resumen' ? html`<button class="btn-primary" @click=${this.siguiente}>Siguiente</button>` : ''}
+                    </div> <!-- fin de div class nav -->
+                </div> <!-- fin de div class form-card -->
+            </main>
+        `;
     }
 }
 
