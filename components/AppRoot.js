@@ -1,61 +1,40 @@
+/**
+ * Componente principal de la SPA (Single Page Application).
+ * Controla el flujo del formulario paso a paso: datos básicos → lenguajes → experiencia → resumen.
+ * Se comunica con los subcomponentes a través de propiedades (.prop) y eventos personalizados (@evento).
+ * No utiliza ningún router externo: maneja el "routing" manualmente con la propiedad `paso`.
+ */
+
 import { LitElement, html, css } from 'https://unpkg.com/lit@3.0.0/index.js?module';
 
 export class AppRoot extends LitElement {
     static properties = {
-        paso: { type: String }
+        paso: { type: String },
+        pasoValido: { type: Boolean }
     };
 
     constructor() {
         super();
-        this.paso = 'datos'; // pantalla inicial
 
+        // Estado inicial del flujo del formulario
+        this.paso = 'datos'; // pantalla inicial
+        this.pasoValido = false; // indica si el paso actual es válido o no
+
+        // Datos recolectados en cada paso
         this.datosBasicos = {};
         this.lenguajes = [{ nombre: '', anios: '' }]; // lista de lenguajes programados
         this.experiencia = [{ empresa: '', anios: '', inicio: '', fin: '' }];
 
-
-
     }
 
+    // Estilos generales del contenedor principal y botones
     static styles = css`
-
-        .form-card {
-            background-color: white;
-            border-radius: 12px;
-            padding: 2rem;
-            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.05);
-            width: 800px;
-            margin: auto;
-        }
 
         .nav {
             margin-top: 2rem;
             display: flex;
             justify-content: space-between;
             gap: 1rem;
-        }
-
-        button {
-            font-size: 1rem;
-            border-radius: 6px;
-            padding: 0.6rem 1.2rem;
-            border: none;
-            cursor: pointer;
-            transition: background 0.2s ease;
-        }
-
-        .btn-primary {
-            background-color: #2563eb;
-            color: white;
-        }
-
-        .btn-primary:hover {
-            background-color: #1d4ed8;
-        }
-
-        .btn-secondary {
-            background-color: #e5e7eb;
-            color: black;
         }
 
         input, select {
@@ -70,39 +49,60 @@ export class AppRoot extends LitElement {
     
     `;
 
-    siguiente() {
-        if (this.paso === 'datos'){
-            const form = this.renderRoot.querySelector('form-datos');
-            if (!form.isValid()) return;
-            this.paso = 'lenguajes';
-        }
-        else if (this.paso === 'lenguajes') {
-            const form = this.renderRoot.querySelector('form-lenguajes');
-            if (!form.isValid()) return;
-            this.paso = 'experiencia';
-          }
-        else if (this.paso === 'experiencia') {
-        const form = this.renderRoot.querySelector('form-experiencia');
-        if (!form.isValid()) return;
-        this.paso = 'resumen';
-        }
+    firstUpdated() {
+        this._verificarValidez();
+        this.addEventListener('actualizar-datos', () => this._verificarValidez());
+        this.addEventListener('actualizar-lenguajes', () => this._verificarValidez());
+        this.addEventListener('actualizar-experiencia', () => this._verificarValidez());
     }
 
+    _verificarValidez() {
+        let form;
+        if (this.paso === 'datos') form = this.renderRoot.querySelector('form-datos');
+        else if (this.paso === 'lenguajes') form = this.renderRoot.querySelector('form-lenguajes');
+        else if (this.paso === 'experiencia') form = this.renderRoot.querySelector('form-experiencia');
+        this.pasoValido = form?.isValid?.() ?? false;
+    }
+
+    /**
+     * Lógica para avanzar al siguiente paso del formulario.
+     * Valida el paso actual antes de continuar.
+    */
+    siguiente() {
+        if (!this.pasoValido) return;
+
+        if (this.paso === 'datos') this.paso = 'lenguajes';
+        else if (this.paso === 'lenguajes') this.paso = 'experiencia';
+        else if (this.paso === 'experiencia') this.paso = 'resumen';
+        
+        // Esperamos a que el nuevo form se renderice antes de validar
+        this.updateComplete.then(() => this._verificarValidez());
+    }
+
+    /**
+     * Lógica para retroceder al paso anterior.
+     */
     anterior() {
         if (this.paso === 'resumen') this.paso = 'experiencia';
         else if (this.paso === 'experiencia') this.paso = 'lenguajes';
         else if (this.paso === 'lenguajes') this.paso = 'datos';
+
+        this.updateComplete.then(() => this._verificarValidez());
     }
 
+    // Recibe los datos emitidos por form-datos
     actualizarDatos(e) {
         this.datosBasicos = e.detail;
         console.log('Datos actualizados:', this.datosBasicos);
     }
 
+    // Recibe los lenguajes emitidos por form-lenguajes
     actualizarLenguajes(e) {
         this.lenguajes = e.detail;
         console.log('Lenguajes actualizados:', this.lenguajes);
     }
+
+    // Recibe la experiencia emitida por form-experiencia
     actualizarExperiencia(e) {
         this.experiencia = e.detail;
         console.log('Experiencia actualizada:', this.experiencia);
@@ -112,7 +112,8 @@ export class AppRoot extends LitElement {
     render() {
         return html`
             <main>
-                <div class="form-card">
+                <card-container>
+                    <!-- Render dinámico según el paso actual -->
                     ${this.paso === 'datos' ? html`
                         <form-datos
                             .datos=${this.datosBasicos}
@@ -135,12 +136,21 @@ export class AppRoot extends LitElement {
                             .experiencia=${this.experiencia}
                         ></form-resumen>` : ''}
                 
-                    <!-- Botones de navegación dentro del form-card -->
+                    <!-- Botones de navegación dentro del card-container -->
                     <div class="nav">
-                        ${this.paso !== 'datos' ? html`<button class="btn-secondary" @click=${this.anterior}>Anterior</button>` : ''}
-                        ${this.paso !== 'resumen' ? html`<button class="btn-primary" @click=${this.siguiente}>Siguiente</button>` : ''}
+                        ${this.paso !== 'datos' ? html`
+                            <button-secondary
+                                .label=${'Anterior'}
+                                @accion=${this.anterior}>
+                            </button-secondary>` : ''}
+                        ${this.paso !== 'resumen' ? html`
+                            <button-primary
+                                .label=${'Siguiente'}
+                                .disabled=${!this.pasoValido}
+                                @click=${this.siguiente}>
+                            </button-primary>` : ''}
                     </div> <!-- fin de div class nav -->
-                </div> <!-- fin de div class form-card -->
+                </card-container>
             </main>
         `;
     }

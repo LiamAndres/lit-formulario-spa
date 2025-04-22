@@ -1,8 +1,19 @@
+/**
+ * <form-lenguajes>
+ * Componente que permite al usuario ingresar uno o varios lenguajes de programación y sus años de experiencia.
+ * 
+ * Cada lenguaje ingresado se muestra en una fila editable.
+ * Permite agregar o eliminar lenguajes dinámicamente.
+ * 
+ * La validación asegura que al menos un lenguaje tenga un nombre y años válidos (> 0).
+ * Emite el evento personalizado `@actualizar-lenguajes` hacia el componente padre con los datos actualizados.
+ */
+
 import { LitElement, html, css } from 'https://unpkg.com/lit@3.0.0/index.js?module';
 
 class FormLenguajes extends LitElement {
   static properties = {
-    lenguajes: { type: Array }
+    lenguajes: { type: Array } // Lista de lenguajes [{ nombre: '', anios: '' }]
   };
 
   constructor() {
@@ -10,9 +21,10 @@ class FormLenguajes extends LitElement {
     this.lenguajes = [
       { nombre: '', anios: '' }
     ];
-    this.errores = [];
+    this.errores = []; // Se utiliza para mostrar mensajes de validación generales
   }
 
+  // Estilos propios del componente
   static styles = css`
     :host {
       display: block;
@@ -54,22 +66,6 @@ class FormLenguajes extends LitElement {
       background-color: #dc2626;
     }
 
-    .agregar {
-      margin-top: 1rem;
-      background-color: #2563eb;
-      color: white;
-      border: none;
-      padding: 0.6rem 1.2rem;
-      font-size: 1rem;
-      border-radius: 6px;
-      cursor: pointer;
-      transition: background 0.2s ease;
-    }
-
-    .agregar:hover {
-      background-color: #1d4ed8;
-    }
-
     .error {
       color: red;
       font-size: 0.8rem;
@@ -77,6 +73,10 @@ class FormLenguajes extends LitElement {
     }
   `;
 
+  /**
+   * Actualiza el valor de un campo (nombre o anios) para un lenguaje específico.
+   * Luego emite el evento para sincronizar con el componente padre.
+   */
   actualizarCampo(index, campo, valor) {
     const nuevos = [...this.lenguajes];
     nuevos[index][campo] = valor;
@@ -84,16 +84,26 @@ class FormLenguajes extends LitElement {
     this._emitirCambio();
   }
 
+  /**
+   * Agrega una nueva fila vacía para ingresar otro lenguaje.
+   */
   agregarLenguaje() {
     this.lenguajes = [...this.lenguajes, { nombre: '', anios: '' }];
     this._emitirCambio();
   }
 
+  /**
+   * Elimina el lenguaje en el índice indicado.
+   */
   eliminarLenguaje(index) {
     this.lenguajes = this.lenguajes.filter((_, i) => i !== index);
     this._emitirCambio();
   }
 
+  /**
+   * Emite el evento 'actualizar-lenguajes' al componente padre (AppRoot),
+   * para mantener sincronizados los datos en la SPA.
+   */
   _emitirCambio() {
     this.dispatchEvent(new CustomEvent('actualizar-lenguajes', {
       detail: this.lenguajes,
@@ -102,6 +112,10 @@ class FormLenguajes extends LitElement {
     }));
   }
 
+  /**
+   * Renderiza el formulario con múltiples filas para ingresar lenguajes.
+   * Muestra errores generales si existen (debajo de la lista).
+   */
   render() {
     return html`
       <h2>Lenguajes de Programación</h2>
@@ -124,14 +138,17 @@ class FormLenguajes extends LitElement {
         </div>
       `)}
 
-      ${this.errores.length > 0 ? html`
-        <div class="error">${this.errores[0]}</div>
-      ` : ''}
-
-      <button class="agregar" @click=${this.agregarLenguaje}>Agregar lenguaje</button>
+      <button-primary
+        .label=${'Agregar lenguaje'}
+        @accion=${this.agregarLenguaje}>
+      </button-primary>
     `;
   }
 
+  /**
+   * Método público invocado desde AppRoot para validar el formulario.
+   * Valida que al menos un lenguaje tenga nombre no vacío y años > 0.
+   */
   isValid() {
     let errores = [];
   

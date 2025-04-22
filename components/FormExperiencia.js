@@ -1,8 +1,23 @@
+/**
+ * <form-experiencia>
+ * Componente que permite ingresar una o varias experiencias laborales.
+ * 
+ * Cada experiencia incluye:
+ * - Nombre de la empresa
+ * - Años de experiencia
+ * - Fecha de inicio y fecha de fin
+ * 
+ * Permite añadir o eliminar bloques de experiencia.
+ * Se valida que al menos una entrada tenga todos los campos correctamente completados.
+ * 
+ * Emite el evento personalizado `@actualizar-experiencia` con los datos al componente padre.
+ */
+
 import { LitElement, html, css } from 'https://unpkg.com/lit@3.0.0/index.js?module';
 
 class FormExperiencia extends LitElement {
   static properties = {
-    experiencia: { type: Array }
+    experiencia: { type: Array } // Lista de objetos { empresa, anios, inicio, fin }
   };
 
   constructor() {
@@ -10,9 +25,10 @@ class FormExperiencia extends LitElement {
     this.experiencia = [
       { empresa: '', anios: '', inicio: '', fin: '' }
     ];
-    this.errores = [];
+    this.errores = []; // Almacena errores generales de validación
   }
 
+  // Estilos del componente
   static styles = css`
     :host {
       display: block;
@@ -62,24 +78,6 @@ class FormExperiencia extends LitElement {
       background-color: #dc2626;
     }
 
-    .agregar-btn {
-      background-color: #2563eb;
-      color: white;
-      border: none;
-      border-radius: 6px;
-      margin-top: 1rem;
-      padding: 0.6rem 1.2rem;
-      cursor: pointer;
-      font-size: 1rem;
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-    }
-
-    .agregar-btn:hover {
-      background-color: #1d4ed8;
-    }
-
     .error {
       color: red;
       font-size: 0.8rem;
@@ -87,6 +85,9 @@ class FormExperiencia extends LitElement {
     }
   `;
 
+  /**
+   * Actualiza el campo de una experiencia específica y emite evento al padre.
+   */
   actualizarCampo(index, campo, valor) {
     const copia = [...this.experiencia];
     copia[index][campo] = valor;
@@ -94,16 +95,25 @@ class FormExperiencia extends LitElement {
     this._emitirCambio();
   }
 
+  /**
+   * Agrega una nueva experiencia vacía.
+   */
   agregarExperiencia() {
     this.experiencia = [...this.experiencia, { empresa: '', anios: '', inicio: '', fin: '' }];
     this._emitirCambio();
   }
 
+  /**
+   * Elimina una experiencia según su índice.
+   */
   eliminarExperiencia(index) {
     this.experiencia = this.experiencia.filter((_, i) => i !== index);
     this._emitirCambio();
   }
 
+  /**
+   * Emite el evento personalizado `actualizar-experiencia` con el array actualizado.
+   */
   _emitirCambio() {
     this.dispatchEvent(new CustomEvent('actualizar-experiencia', {
       detail: this.experiencia,
@@ -112,6 +122,10 @@ class FormExperiencia extends LitElement {
     }));
   }
 
+  /**
+   * Renderiza los bloques de experiencia con inputs para cada campo.
+   * Muestra errores generales de validación si existen.
+   */
   render() {
     return html`
       <h2>Experiencia Laboral</h2>
@@ -145,14 +159,19 @@ class FormExperiencia extends LitElement {
           </button>
         </div>
       `)}
-      ${this.errores.length > 0 ? html`
-        <div class="error">${this.errores[0]}</div>
-      ` : ''}
 
-      <button class="agregar-btn" @click=${this.agregarExperiencia}>➕ Agregar Experiencia</button>
+      <!-- <button class="agregar-btn" @click=${this.agregarExperiencia}>➕ Agregar Experiencia</button> -->
+      <button-primary
+        .label=${'➕ Agregar Experiencia'}
+        @accion=${this.agregarExperiencia}>
+      </button-primary>
     `;
   }
 
+  /**
+   * Verifica que al menos una experiencia sea válida.
+   * Valida: nombre empresa no vacío, años positivos, fechas válidas (inicio <= fin).
+   */
   isValid() {
     let errores = [];
   

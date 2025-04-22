@@ -1,8 +1,16 @@
+/**
+ * <form-datos>
+ * Componente de formulario para la recolección de datos básicos del usuario.
+ * Contiene inputs controlados para: nombre, apellido, tipo y número de documento, sexo y fecha de nacimiento.
+ * Se comunica con el componente padre mediante un evento personalizado `@actualizar-datos`.
+ * También incorpora validaciones internas (con mensajes de error visibles) y un método público `isValid()` para validar antes de avanzar.
+ */
+
 import { LitElement, html, css } from 'https://unpkg.com/lit@3.0.0/index.js?module';
 
 class FormDatos extends LitElement {
   static properties = {
-    datos: { type: Object }
+    datos: { type: Object } // Datos recibidos desde AppRoot
   };
 
   constructor() {
@@ -15,6 +23,8 @@ class FormDatos extends LitElement {
       sexo: '',
       fechaNacimiento: ''
     };
+
+    // Almacena errores de validación para mostrarlos junto a los inputs
     this.errores = {
       nombre: '',
       apellido: '',
@@ -25,6 +35,7 @@ class FormDatos extends LitElement {
     };
   }
 
+  // Estilos internos del componente
   static styles = css`
       :host {
         display: block;
@@ -69,12 +80,20 @@ class FormDatos extends LitElement {
       }
   `;
 
+  /**
+   * Actualiza un campo del objeto `datos` cuando el usuario escribe.
+   * Luego emite un evento `actualizar-datos` hacia el componente padre.
+   */
   actualizarCampo(e, campo) {
     this.datos = {
       ...this.datos,
       [campo]: e.target.value
     };
 
+    // Ejecutar validación para mantener estado al día
+    this.isValid();
+
+    //dispatchEvent es la forma de emitir un evento personalizado desde un componente hijo
     this.dispatchEvent(new CustomEvent('actualizar-datos', {
       detail: this.datos,
       bubbles: true,
@@ -82,11 +101,17 @@ class FormDatos extends LitElement {
     }));
   }
 
+  /**
+   * Renderiza el formulario.
+   * Incluye inputs y selects con valores enlazados (.value) y eventos @input/@change.
+   * Muestra mensajes de error debajo de cada campo si existen.
+   */
   render() {
     return html`
       <h2>Formulario: Datos Básicos</h2>
 
       <div class="grid">
+        <!-- Campo: Nombre -->
         <div class="campo">
           <label>Nombre</label>
           <input 
@@ -95,9 +120,9 @@ class FormDatos extends LitElement {
             .value=${this.datos.nombre ?? ''} 
             @input=${e => this.actualizarCampo(e, 'nombre')} 
           />
-          ${this.errores.nombre ? html`<span class="error">${this.errores.nombre}</span>` : ''}
         </div>
 
+        <!-- Campo: Apellido -->
         <div class="campo">
           <label>Apellido</label>
           <input 
@@ -105,9 +130,9 @@ class FormDatos extends LitElement {
             pattern="[A-Za-zÁÉÍÓÚáéíóúñÑ\s]{1,40}"
             .value=${this.datos.apellido ?? ''} 
             @input=${e => this.actualizarCampo(e, 'apellido')} />
-          ${this.errores.apellido ? html`<span class="error">${this.errores.apellido}</span>` : ''}
         </div>
 
+        <!-- Campo: Tipo de documento -->
         <div class="campo">
           <label>Tipo de documento</label>
           <select .value=${this.datos.tipoDocumento} @change=${e => this.actualizarCampo(e, 'tipoDocumento')}>
@@ -115,9 +140,9 @@ class FormDatos extends LitElement {
             <option value="dni">DNI</option>
             <option value="pasaporte">Pasaporte</option>
           </select>
-          ${this.errores.tipoDocumento ? html`<span class="error">${this.errores.tipoDocumento}</span>` : ''}
         </div>
 
+        <!-- Campo: Número de documento -->
         <div class="campo">
           <label>Número de documento</label>
           <input 
@@ -125,9 +150,9 @@ class FormDatos extends LitElement {
             type="number" 
             .value=${this.datos.numeroDocumento} 
             @input=${e => this.actualizarCampo(e, 'numeroDocumento')} />
-          ${this.errores.numeroDocumento ? html`<span class="error">${this.errores.numeroDocumento}</span>` : ''}
         </div>
 
+        <!-- Campo: Sexo -->
         <div class="campo">
           <label>Sexo</label>
           <select .value=${this.datos.sexo} @change=${e => this.actualizarCampo(e, 'sexo')}>
@@ -135,18 +160,21 @@ class FormDatos extends LitElement {
             <option value="masculino">Masculino</option>
             <option value="femenino">Femenino</option>
           </select>
-          ${this.errores.sexo ? html`<span class="error">${this.errores.sexo}</span>` : ''}
         </div>
 
+        <!-- Campo: Fecha de nacimiento -->
         <div class="campo">
           <label>Fecha de nacimiento</label>
           <input type="date" .value=${this.datos.fechaNacimiento} @input=${e => this.actualizarCampo(e, 'fechaNacimiento')} />
-          ${this.errores.fechaNacimiento ? html`<span class="error">${this.errores.fechaNacimiento}</span>` : ''}
         </div>
       </div> <!-- fin div class grid -->
     `;
   }
 
+  /**
+   * Método público llamado desde el componente padre (`AppRoot`)
+   * para validar todos los campos antes de continuar al siguiente paso.
+   */
   isValid() {
     const { nombre, apellido, tipoDocumento, numeroDocumento, sexo, fechaNacimiento } = this.datos;
   
@@ -166,7 +194,7 @@ class FormDatos extends LitElement {
     }
   
     this.errores = errores;
-    this.requestUpdate();
+    this.requestUpdate(); // actualiza la UI con los errores
   
     return Object.keys(errores).length === 0;
   }
