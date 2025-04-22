@@ -71,13 +71,6 @@ class FormDatos extends LitElement {
         gap: 1rem;
         width: 100%;
       }
-
-      .error {
-        color: red;
-        font-size: 0.8rem;
-        margin-top: 0.3rem;
-        display: block;
-      }
   `;
 
   /**
@@ -117,6 +110,8 @@ class FormDatos extends LitElement {
           <input 
             maxlength="40"
             pattern="[A-Za-zÁÉÍÓÚáéíóúñÑ\s]{1,40}" 
+            type="text"
+            oninput="this.value = this.value.replace(/[^A-Za-zÁÉÍÓÚáéíóúñÑ\s]/g, '')"
             .value=${this.datos.nombre ?? ''} 
             @input=${e => this.actualizarCampo(e, 'nombre')} 
           />
@@ -128,6 +123,7 @@ class FormDatos extends LitElement {
           <input 
             maxlength="40"
             pattern="[A-Za-zÁÉÍÓÚáéíóúñÑ\s]{1,40}"
+            oninput="this.value = this.value.replace(/[^A-Za-zÁÉÍÓÚáéíóúñÑ\s]/g, '')"
             .value=${this.datos.apellido ?? ''} 
             @input=${e => this.actualizarCampo(e, 'apellido')} />
         </div>
@@ -147,6 +143,8 @@ class FormDatos extends LitElement {
           <label>Número de documento</label>
           <input 
             maxlength="40"
+            min="0"
+            max="99"
             type="number" 
             .value=${this.datos.numeroDocumento} 
             @input=${e => this.actualizarCampo(e, 'numeroDocumento')} />

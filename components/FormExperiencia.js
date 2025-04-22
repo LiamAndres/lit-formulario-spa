@@ -58,32 +58,22 @@ class FormExperiencia extends LitElement {
       border-radius: 6px;
       box-sizing: border-box;
     }
-
-    .eliminar-btn {
-      grid-column: span 2;
-      background-color: #ef4444;
-      color: white;
-      border: none;
-      padding: 0.5rem 1rem;
-      font-size: 0.9rem;
-      border-radius: 6px;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      gap: 0.4rem;
-      width: fit-content;
-    }
-
-    .eliminar-btn:hover {
-      background-color: #dc2626;
-    }
-
-    .error {
-      color: red;
-      font-size: 0.8rem;
-      grid-column: span 2;
-    }
   `;
+
+  calcularAniosYMeses(fechaInicio, fechaFin) {
+    const inicio = new Date(fechaInicio);
+    const fin = new Date(fechaFin);
+
+    let anios = fin.getFullYear() - inicio.getFullYear();
+    let meses = fin.getMonth() - inicio.getMonth();
+
+    if (meses < 0) {
+      anios--;
+      meses += 12;
+    }
+
+    return `${anios} años y ${meses} meses`;
+  }
 
   /**
    * Actualiza el campo de una experiencia específica y emite evento al padre.
@@ -91,6 +81,13 @@ class FormExperiencia extends LitElement {
   actualizarCampo(index, campo, valor) {
     const copia = [...this.experiencia];
     copia[index][campo] = valor;
+
+    if (copia[index].inicio && copia[index].fin && new Date(copia[index].inicio) <= new Date(copia[index].fin)) {
+      copia[index].anios = this.calcularAniosYMeses(copia[index].inicio, copia[index].fin);
+    } else {
+      copia[index].anios = '';
+    }
+
     this.experiencia = copia;
     this._emitirCambio();
   }
@@ -99,7 +96,7 @@ class FormExperiencia extends LitElement {
    * Agrega una nueva experiencia vacía.
    */
   agregarExperiencia() {
-    this.experiencia = [...this.experiencia, { empresa: '', anios: '', inicio: '', fin: '' }];
+    this.experiencia = [...this.experiencia, { empresa: '', anios: 0, inicio: '', fin: '' }];
     this._emitirCambio();
   }
 
@@ -115,8 +112,17 @@ class FormExperiencia extends LitElement {
    * Emite el evento personalizado `actualizar-experiencia` con el array actualizado.
    */
   _emitirCambio() {
+
+    // Solo emitimos experiencias válidas
+    const experienciasValidas = this.experiencia.filter(exp =>
+      exp.empresa?.trim() &&
+      exp.inicio &&
+      exp.fin &&
+      new Date(exp.inicio) <= new Date(exp.fin)
+    );
+
     this.dispatchEvent(new CustomEvent('actualizar-experiencia', {
-      detail: this.experiencia,
+      detail: experienciasValidas,
       bubbles: true,
       composed: true
     }));
@@ -137,12 +143,18 @@ class FormExperiencia extends LitElement {
             .value=${item.empresa ?? ''}
             @input=${e => this.actualizarCampo(index, 'empresa', e.target.value)} />
 
-          <input
+          <!-- <input
             type="number"
             min="0"
             placeholder="Años de experiencia"
-            .value=${item.anios ?? ''}
-            @input=${e => this.actualizarCampo(index, 'anios', e.target.value)} />
+            .value=${item.anios ?? 0}
+            @input=${e => this.actualizarCampo(index, 'anios', e.target.value)} /> -->
+
+          <input
+          type="text"
+          placeholder="Años (calculado)"
+          .value=${item.anios ?? 0}
+          readonly />
 
           <input
             type="date"
@@ -154,9 +166,15 @@ class FormExperiencia extends LitElement {
             .value=${item.fin ?? ''}
             @input=${e => this.actualizarCampo(index, 'fin', e.target.value)} />
 
-          <button class="eliminar-btn" @click=${() => this.eliminarExperiencia(index)}>
+          <!-- <button class="eliminar-btn" @click=${() => this.eliminarExperiencia(index)}>
             🗑 Eliminar
-          </button>
+          </button> -->
+          <button-delete
+            .showIcon=${true}
+            .label=${'Eliminar'}
+            @accion=${() => this.eliminarLenguaje(index)}>
+          </button-delete>
+
         </div>
       `)}
 
@@ -173,23 +191,17 @@ class FormExperiencia extends LitElement {
    * Valida: nombre empresa no vacío, años positivos, fechas válidas (inicio <= fin).
    */
   isValid() {
-    let errores = [];
-  
-    const algunaValida = this.experiencia.some(exp => {
-      const fechasValidas = exp.inicio && exp.fin && exp.inicio <= exp.fin;
-      const empresaOk = exp.empresa?.trim();
-      const aniosOk = !isNaN(exp.anios) && Number(exp.anios) > 0;
-      return empresaOk && aniosOk && fechasValidas;
-    });
-  
-    if (!algunaValida) {
-      errores.push('Debe completar al menos una experiencia válida.');
-    }
-  
-    this.errores = errores;
+    const algunaValida = this.experiencia.some(exp =>
+      exp.empresa?.trim() &&
+      exp.inicio &&
+      exp.fin &&
+      new Date(exp.inicio) <= new Date(exp.fin)
+    );
+
+    this.errores = algunaValida ? [] : ['Debe completar al menos una experiencia válida.'];
     this.requestUpdate();
-  
-    return errores.length === 0;
+
+    return this.errores.length === 0;
   }
 
 }

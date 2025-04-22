@@ -136,7 +136,7 @@ class FormResumen extends LitElement {
               <span>${exp.empresa}</span>
               <span>${exp.inicio} - ${exp.fin}</span>
             </div>
-            <div class="value" style="text-align:right">${exp.anios} años de experiencia</div>
+            <div class="value" style="text-align:right">Duración: ${exp.anios}</div>
           </div>
         `)}
       </section>

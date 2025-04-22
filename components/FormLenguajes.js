@@ -51,26 +51,6 @@ class FormLenguajes extends LitElement {
       font-size: 1rem;
       box-sizing: border-box;
     }
-
-    button.eliminar {
-      background-color: #ef4444;
-      color: white;
-      border: none;
-      padding: 0.5rem;
-      font-size: 1rem;
-      border-radius: 6px;
-      cursor: pointer;
-    }
-
-    button.eliminar:hover {
-      background-color: #dc2626;
-    }
-
-    .error {
-      color: red;
-      font-size: 0.8rem;
-      grid-column: span 3;
-    }
   `;
 
   /**
@@ -105,8 +85,11 @@ class FormLenguajes extends LitElement {
    * para mantener sincronizados los datos en la SPA.
    */
   _emitirCambio() {
+    const lenguajesValidos = this.lenguajes.filter(lang =>
+      lang.nombre?.trim() && !isNaN(lang.anios) && Number(lang.anios) > 0
+    );
     this.dispatchEvent(new CustomEvent('actualizar-lenguajes', {
-      detail: this.lenguajes,
+      detail: lenguajesValidos,
       bubbles: true,
       composed: true
     }));
@@ -124,17 +107,24 @@ class FormLenguajes extends LitElement {
         <div class="campo">
           <input
             placeholder="Lenguaje"
+            maxlength="25"
             .value=${item.nombre ?? ''}
             @input=${e => this.actualizarCampo(index, 'nombre', e.target.value)} />
 
           <input
             type="number"
             min="0"
+            max="99"
             placeholder="Años"
             .value=${item.anios ?? ''}
             @input=${e => this.actualizarCampo(index, 'anios', e.target.value)} />
 
-          <button class="eliminar" @click=${() => this.eliminarLenguaje(index)}>🗑</button>
+          <!-- <button class="eliminar" @click=${() => this.eliminarLenguaje(index)}>🗑</button> -->
+          <button-delete
+            .showIcon=${true}
+            
+            @accion=${() => this.eliminarLenguaje(index)}>
+          </button-delete>
         </div>
       `)}
 
@@ -150,21 +140,16 @@ class FormLenguajes extends LitElement {
    * Valida que al menos un lenguaje tenga nombre no vacío y años > 0.
    */
   isValid() {
-    let errores = [];
-  
-    // Debe haber al menos un lenguaje con nombre y años válidos
-    const valido = this.lenguajes.some(lang => 
+    const lenguajesValidos = this.lenguajes.filter(lang =>
       lang.nombre?.trim() && !isNaN(lang.anios) && Number(lang.anios) > 0
     );
   
-    if (!valido) {
-      errores.push('Debe ingresar al menos un lenguaje válido con nombre y años.');
-    }
+    this.errores = lenguajesValidos.length === 0
+      ? ['Debe ingresar al menos un lenguaje válido con nombre y años.']
+      : [];
   
-    this.errores = errores;
     this.requestUpdate();
-  
-    return errores.length === 0;
+    return this.errores.length === 0;
   }
 }
 

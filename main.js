@@ -22,6 +22,7 @@ import './components/FormResumen.js';
 import './components/atoms/CardContainer.js';
 import './components/atoms/ButtonPrimary.js';
 import './components/atoms/ButtonSecondary.js';
+import './components/atoms/ButtonDelete.js';
 
 
 
